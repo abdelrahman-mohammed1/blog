@@ -1,10 +1,16 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { CardGridSkeleton } from "@/components/shared/card-grid-skeleton";
 import { PostsList } from "@/features/posts/posts-list";
 import { ROUTES } from "@/lib/constants";
+
+function PostsListFallback() {
+  return <CardGridSkeleton count={6} />;
+}
 
 export default function PostsPage() {
   return (
@@ -23,7 +29,9 @@ export default function PostsPage() {
         }
       />
 
-      <PostsList />
+      <Suspense fallback={<PostsListFallback />}>
+        <PostsList />
+      </Suspense>
     </div>
   );
 }

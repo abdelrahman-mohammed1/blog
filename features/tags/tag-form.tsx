@@ -5,22 +5,45 @@ import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/shared/form-input";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { Form } from "@/components/ui/form";
-import { useCreateTag } from "@/hooks/use-tags";
+import { useCreateTag, useUpdateTag } from "@/hooks/use-tags";
 import { tagSchema, type TagFormValues } from "@/lib/validations";
 
-export function TagForm() {
+interface TagFormProps {
+  mode?: "create" | "edit";
+  tagId?: string;
+  defaultValues?: TagFormValues;
+  onSuccess?: () => void;
+}
+
+export function TagForm({
+  mode = "create",
+  tagId,
+  defaultValues,
+  onSuccess,
+}: TagFormProps) {
   const createTag = useCreateTag();
+  const updateTag = useUpdateTag(tagId ?? "");
+  const isEdit = mode === "edit" && !!tagId;
 
   const form = useForm<TagFormValues>({
     resolver: zodResolver(tagSchema),
-    defaultValues: { name: "" },
+    defaultValues: defaultValues ?? { name: "" },
   });
 
   const onSubmit = (values: TagFormValues) => {
-    createTag.mutate(values, {
-      onSuccess: () => form.reset(),
-    });
+    if (isEdit) {
+      updateTag.mutate(values, { onSuccess });
+    } else {
+      createTag.mutate(values, {
+        onSuccess: () => {
+          form.reset();
+          onSuccess?.();
+        },
+      });
+    }
   };
+
+  const isPending = createTag.isPending || updateTag.isPending;
 
   return (
     <Form {...form}>
@@ -34,10 +57,10 @@ export function TagForm() {
           label="Tag name"
           placeholder="e.g. tutorial"
           className="flex-1"
-          disabled={createTag.isPending}
+          disabled={isPending}
         />
-        <SubmitButton isLoading={createTag.isPending}>
-          Add Tag
+        <SubmitButton isLoading={isPending}>
+          {isEdit ? "Save Tag" : "Add Tag"}
         </SubmitButton>
       </form>
     </Form>

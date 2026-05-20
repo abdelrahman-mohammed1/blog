@@ -49,9 +49,9 @@ export default function DashboardPage() {
   const { data: tags } = useTags();
 
   const stats = [
-    { label: "Posts", value: posts?.length ?? 0 },
-    { label: "Categories", value: categories?.length ?? 0 },
-    { label: "Tags", value: tags?.length ?? 0 },
+    { label: "Posts", value: posts?.meta?.total ?? 0 },
+    { label: "Categories", value: categories?.meta?.total ?? 0 },
+    { label: "Tags", value: tags?.meta?.total ?? 0 },
   ];
 
   return (
@@ -76,7 +76,9 @@ export default function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold tracking-tight">{stat.value}</p>
+                <p className="font-heading text-3xl font-bold tracking-tight">
+                  {stat.value}
+                </p>
               </CardContent>
             </Card>
           </motion.div>

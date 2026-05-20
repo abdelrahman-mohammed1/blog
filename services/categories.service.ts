@@ -1,15 +1,35 @@
-import type { Category, CreateCategoryPayload } from "@/types/category";
-import { api, unwrapList } from "./api";
+import type { ListQueryParams, PaginatedResult } from "@/types/api";
+import type {
+  Category,
+  CreateCategoryPayload,
+  UpdateCategoryPayload,
+} from "@/types/category";
+import { api, unwrapPaginated, unwrapSingle } from "./api";
 
 export const categoriesService = {
-  getAll: async (): Promise<Category[]> => {
-    const { data } = await api.get<unknown>("/categories");
-    return unwrapList<Category>(data);
+  getAll: async (
+    params?: ListQueryParams
+  ): Promise<PaginatedResult<Category>> => {
+    const { data } = await api.get<unknown>("/categories", { params });
+    return unwrapPaginated<Category>(data);
+  },
+
+  getById: async (id: string): Promise<Category> => {
+    const { data } = await api.get<unknown>(`/categories/${id}`);
+    return unwrapSingle<Category>(data);
   },
 
   create: async (payload: CreateCategoryPayload): Promise<Category> => {
-    const { data } = await api.post<Category>("/categories", payload);
-    return data;
+    const { data } = await api.post<unknown>("/categories", payload);
+    return unwrapSingle<Category>(data);
+  },
+
+  update: async (
+    id: string,
+    payload: UpdateCategoryPayload
+  ): Promise<Category> => {
+    const { data } = await api.put<unknown>(`/categories/${id}`, payload);
+    return unwrapSingle<Category>(data);
   },
 
   delete: async (id: string): Promise<void> => {

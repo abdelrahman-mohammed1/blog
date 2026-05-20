@@ -1,59 +1,47 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { FileText, Plus, Search, Trash2 } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
+import { DebouncedSearch } from "@/components/shared/debounced-search";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Pagination } from "@/components/shared/pagination";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
+import { CardGridSkeleton } from "@/components/shared/card-grid-skeleton";
+import { ListPagination } from "@/components/shared/list-pagination";
+import { useUrlParams } from "@/hooks/use-url-params";
 import { useDeletePost, usePosts } from "@/hooks/use-posts";
-import { POSTS_PAGE_SIZE, ROUTES } from "@/lib/constants";
-import type { Post } from "@/types/post";
-import { motion } from "framer-motion";
-
-function getTagId(post: Post): string {
-  if (typeof post.tags === "string") return post.tags;
-  return post.tags?._id ?? "";
-}
-
-function getTagName(post: Post): string {
-  if (typeof post.tags === "object" && post.tags?.name) return post.tags.name;
-  return getTagId(post).slice(-6) || "—";
-}
+import { buildPostsParams } from "@/lib/query-params";
+import { ROUTES } from "@/lib/constants";
+import { PostCard } from "@/features/posts/post-card";
+import { PostsFilters } from "@/features/posts/posts-filters";
 
 export function PostsList() {
-  const { data, isLoading, isError, error } = usePosts();
-  const deletePost = useDeletePost();
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const { searchParams, updateParams, page } = useUrlParams();
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const debouncedSearch = useDebounce(search, 300);
+  const deletePost = useDeletePost();
 
-  const filtered = useMemo(() => {
-    if (!data) return [];
-    const q = debouncedSearch.toLowerCase().trim();
-    if (!q) return data;
-    return data.filter(
-      (post) =>
-        post.title.toLowerCase().includes(q) ||
-        post.slug.toLowerCase().includes(q) ||
-        post.content.toLowerCase().includes(q)
-    );
-  }, [data, debouncedSearch]);
+  const apiParams = useMemo(() => buildPostsParams(searchParams), [searchParams]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const paginated = filtered.slice(
-    (currentPage - 1) * POSTS_PAGE_SIZE,
-    currentPage * POSTS_PAGE_SIZE
+  const { data, isLoading, isFetching, isError, error } = usePosts({
+    page,
+    search: apiParams.search as string | undefined,
+    category: apiParams.category as string | undefined,
+    tag: apiParams.tag as string | undefined,
+    sort: apiParams.sort as "views_desc" | "views_asc" | undefined,
+  });
+
+  const posts = data?.data ?? [];
+  const meta = data?.meta;
+  const searchValue = searchParams.get("search") ?? "";
+
+  const handleSearch = useCallback(
+    (value: string) => {
+      updateParams({ search: value || null });
+    },
+    [updateParams]
   );
 
-  if (isLoading) return <TableSkeleton rows={5} cols={4} />;
+  if (isLoading) return <CardGridSkeleton count={6} />;
 
   if (isError) {
     return (
@@ -64,7 +52,13 @@ export function PostsList() {
     );
   }
 
-  if (!data?.length) {
+  const hasFilters =
+    !!searchValue ||
+    !!searchParams.get("category") ||
+    !!searchParams.get("tag") ||
+    !!searchParams.get("sort");
+
+  if (!posts.length && !hasFilters) {
     return (
       <EmptyState
         icon={FileText}
@@ -85,75 +79,50 @@ export function PostsList() {
 
   return (
     <div className="space-y-6">
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <DebouncedSearch
+          value={searchValue}
+          onDebouncedChange={handleSearch}
           placeholder="Search posts..."
-          className="h-11 rounded-xl pl-10"
+        />
+        <PostsFilters
+          category={searchParams.get("category") ?? ""}
+          tag={searchParams.get("tag") ?? ""}
+          sort={searchParams.get("sort") ?? ""}
+          onCategoryChange={(v) => updateParams({ category: v || null })}
+          onTagChange={(v) => updateParams({ tag: v || null })}
+          onSortChange={(v) => updateParams({ sort: v || null })}
         />
       </div>
 
-      {paginated.length === 0 ? (
+      {isFetching && !isLoading && (
+        <p className="text-xs text-muted-foreground">Updating...</p>
+      )}
+
+      {posts.length === 0 ? (
         <EmptyState
           title="No matching posts"
-          description={`No results for "${debouncedSearch}"`}
+          description="Try adjusting your search or filters."
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
-          {paginated.map((post, index) => (
-            <motion.article
+        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          {posts.map((post, index) => (
+            <PostCard
               key={post._id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/50 p-5 shadow-sm backdrop-blur-md transition-all hover:border-violet-500/30 hover:shadow-md"
-            >
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-lg font-semibold tracking-tight">
-                    {post.title}
-                  </h3>
-                  <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
-                    /{post.slug}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 shrink-0 rounded-lg opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
-                  onClick={() => setDeleteId(post._id)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-              <p className="line-clamp-3 text-sm text-muted-foreground">
-                {post.content}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Badge variant="secondary">{getTagName(post)}</Badge>
-                {Array.isArray(post.categories) &&
-                  post.categories.length > 0 && (
-                    <Badge variant="outline">
-                      {post.categories.length} categor
-                      {post.categories.length === 1 ? "y" : "ies"}
-                    </Badge>
-                  )}
-              </div>
-            </motion.article>
+              post={post}
+              index={index}
+              onDelete={setDeleteId}
+            />
           ))}
         </div>
       )}
 
-      <Pagination
-        page={currentPage}
-        totalPages={totalPages}
-        onPageChange={setPage}
-      />
+      {meta && (
+        <ListPagination
+          meta={meta}
+          onPageChange={(p) => updateParams({ page: String(p) }, { resetPage: false })}
+        />
+      )}
 
       <ConfirmDeleteDialog
         open={!!deleteId}

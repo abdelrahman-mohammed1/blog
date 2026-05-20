@@ -1,40 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import { Tags, Trash2 } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { DataTable, type Column } from "@/components/shared/data-table";
+import { DebouncedSearch } from "@/components/shared/debounced-search";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ListPagination } from "@/components/shared/list-pagination";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useUrlParams } from "@/hooks/use-url-params";
 import { useDeleteTag, useTags } from "@/hooks/use-tags";
+import { buildListParams } from "@/lib/query-params";
+import { ROUTES } from "@/lib/constants";
 import type { Tag } from "@/types/tag";
 
 export function TagsList() {
-  const { data, isLoading, isError, error } = useTags();
-  const deleteTag = useDeleteTag();
+  const { searchParams, updateParams, page } = useUrlParams();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const deleteTag = useDeleteTag();
+
+  const apiParams = useMemo(() => buildListParams(searchParams), [searchParams]);
+  const { data, isLoading, isFetching, isError, error } = useTags({
+    page,
+    search: apiParams.search as string | undefined,
+  });
+
+  const tags = data?.data ?? [];
+  const meta = data?.meta;
+  const searchValue = searchParams.get("search") ?? "";
+
+  const handleSearch = useCallback(
+    (value: string) => updateParams({ search: value || null }),
+    [updateParams]
+  );
 
   const columns: Column<Tag>[] = [
     {
       key: "name",
       header: "Name",
       cell: (item) => (
-        <div className="flex items-center gap-2">
+        <Link
+          href={ROUTES.tag(item._id)}
+          className="flex items-center gap-2 font-medium transition-colors hover:text-primary"
+        >
           <Tags className="size-4 text-indigo-500" />
-          <span className="font-medium">{item.name}</span>
-        </div>
+          {item.name}
+        </Link>
       ),
     },
     {
-      key: "id",
-      header: "ID",
+      key: "slug",
+      header: "Slug",
       cell: (item) => (
-        <Badge variant="secondary" className="font-mono text-xs">
-          {item._id.slice(-8)}
-        </Badge>
+        <span className="font-mono text-xs text-muted-foreground">
+          {item.slug ?? "—"}
+        </span>
       ),
+    },
+    {
+      key: "created",
+      header: "Created",
+      cell: (item) =>
+        item.createdAt
+          ? new Date(item.createdAt).toLocaleDateString()
+          : "—",
     },
     {
       key: "actions",
@@ -54,7 +85,7 @@ export function TagsList() {
     },
   ];
 
-  if (isLoading) return <TableSkeleton rows={4} cols={3} />;
+  if (isLoading) return <TableSkeleton rows={4} cols={4} />;
 
   if (isError) {
     return (
@@ -65,19 +96,39 @@ export function TagsList() {
     );
   }
 
-  if (!data?.length) {
-    return (
-      <EmptyState
-        icon={Tags}
-        title="No tags yet"
-        description="Create your first tag using the form above."
-      />
-    );
-  }
-
   return (
-    <>
-      <DataTable columns={columns} data={data} keyExtractor={(item) => item._id} />
+    <div className="space-y-6">
+      <DebouncedSearch
+        value={searchValue}
+        onDebouncedChange={handleSearch}
+        placeholder="Search tags..."
+      />
+
+      {isFetching && !isLoading && (
+        <p className="text-xs text-muted-foreground">Updating...</p>
+      )}
+
+      {!tags.length ? (
+        <EmptyState
+          icon={Tags}
+          title={searchValue ? "No matching tags" : "No tags yet"}
+          description={
+            searchValue
+              ? `No results for "${searchValue}"`
+              : "Create your first tag using the form above."
+          }
+        />
+      ) : (
+        <DataTable columns={columns} data={tags} keyExtractor={(item) => item._id} />
+      )}
+
+      {meta && (
+        <ListPagination
+          meta={meta}
+          onPageChange={(p) => updateParams({ page: String(p) }, { resetPage: false })}
+        />
+      )}
+
       <ConfirmDeleteDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
@@ -92,6 +143,6 @@ export function TagsList() {
           }
         }}
       />
-    </>
+    </div>
   );
 }

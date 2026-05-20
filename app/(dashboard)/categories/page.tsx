@@ -1,8 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { CategoryForm } from "@/features/categories/category-form";
 import { CategoriesList } from "@/features/categories/categories-list";
 import { PageHeader } from "@/components/shared/page-header";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CategoriesPage() {
@@ -15,14 +17,16 @@ export default function CategoriesPage() {
 
       <Card className="rounded-2xl border-border/60 bg-card/50 shadow-sm backdrop-blur-md">
         <CardHeader>
-          <CardTitle className="text-base">Add category</CardTitle>
+          <CardTitle className="font-heading text-base">Add category</CardTitle>
         </CardHeader>
         <CardContent>
           <CategoryForm />
         </CardContent>
       </Card>
 
-      <CategoriesList />
+      <Suspense fallback={<TableSkeleton rows={4} cols={4} />}>
+        <CategoriesList />
+      </Suspense>
     </div>
   );
 }

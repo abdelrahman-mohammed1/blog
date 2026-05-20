@@ -2,9 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/shared/form-input";
+import { ImageUpload } from "@/components/shared/image-upload";
+import { MultiSelectBadges } from "@/components/shared/multi-select-badges";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { RichTextEditor } from "@/features/posts/rich-text-editor";
 import {
@@ -15,61 +17,123 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useCategories } from "@/hooks/use-categories";
-import { useCreatePost } from "@/hooks/use-posts";
+import { useCreatePost, useUpdatePost } from "@/hooks/use-posts";
 import { useTags } from "@/hooks/use-tags";
+import {
+  getCategoryIds,
+  getTagIds,
+  resolveImageUrl,
+} from "@/lib/post-utils";
 import { ROUTES } from "@/lib/constants";
-import { generateSlug } from "@/lib/slug";
-import { postSchema, type PostFormValues } from "@/lib/validations";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import {
+  postCreateSchema,
+  postUpdateSchema,
+  type PostCreateFormValues,
+  type PostUpdateFormValues,
+} from "@/lib/validations";
+import type { Post } from "@/types/post";
 
-export function PostForm() {
+interface PostFormProps {
+  mode?: "create" | "edit";
+  post?: Post;
+}
+
+export function PostForm({ mode = "create", post }: PostFormProps) {
   const router = useRouter();
+  const isEdit = mode === "edit" && !!post;
   const createPost = useCreatePost();
-  const { data: categories = [], isLoading: categoriesLoading } =
-    useCategories();
-  const { data: tags = [], isLoading: tagsLoading } = useTags();
-  const slugManuallyEdited = useRef(false);
-
-  const form = useForm<PostFormValues>({
-    resolver: zodResolver(postSchema),
-    defaultValues: {
-      title: "",
-      slug: "",
-      content: "",
-      categories: [],
-      tags: "",
-    },
+  const updatePost = useUpdatePost(post?._id ?? "");
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
+    limit: 100,
+    page: 1,
+  });
+  const { data: tagsData, isLoading: tagsLoading } = useTags({
+    limit: 100,
+    page: 1,
   });
 
-  const selectedCategories = form.watch("categories");
+  const categories = categoriesData?.data ?? [];
+  const tags = tagsData?.data ?? [];
+  const isPending = createPost.isPending || updatePost.isPending;
 
-  const onSubmit = (values: PostFormValues) => {
-    createPost.mutate(values, {
-      onSuccess: () => router.push(ROUTES.posts),
-    });
-  };
+  const form = useForm<PostCreateFormValues | PostUpdateFormValues>({
+    resolver: zodResolver(isEdit ? postUpdateSchema : postCreateSchema),
+    defaultValues: isEdit
+      ? {
+          title: post.title,
+          content: post.content,
+          categories: getCategoryIds(post),
+          tags: getTagIds(post),
+          image: null,
+        }
+      : {
+          title: "",
+          content: "",
+          categories: [],
+          tags: [],
+          image: undefined,
+        },
+  });
+
+  useEffect(() => {
+    if (isEdit && post) {
+      form.reset({
+        title: post.title,
+        content: post.content,
+        categories: getCategoryIds(post),
+        tags: getTagIds(post),
+        image: null,
+      });
+    }
+  }, [post, isEdit, form]);
+
+  const selectedCategories = form.watch("categories");
+  const selectedTags = form.watch("tags");
 
   const toggleCategory = (id: string) => {
     const current = form.getValues("categories");
-    if (current.includes(id)) {
-      form.setValue(
-        "categories",
-        current.filter((c) => c !== id),
-        { shouldValidate: true }
+    form.setValue(
+      "categories",
+      current.includes(id) ? current.filter((c) => c !== id) : [...current, id],
+      { shouldValidate: true }
+    );
+  };
+
+  const toggleTag = (id: string) => {
+    const current = form.getValues("tags");
+    form.setValue(
+      "tags",
+      current.includes(id) ? current.filter((t) => t !== id) : [...current, id],
+      { shouldValidate: true }
+    );
+  };
+
+  const onSubmit = (values: PostCreateFormValues | PostUpdateFormValues) => {
+    if (isEdit) {
+      updatePost.mutate(
+        {
+          title: values.title,
+          content: values.content,
+          categories: values.categories,
+          tags: values.tags,
+          image: values.image ?? undefined,
+        },
+        { onSuccess: () => router.push(ROUTES.post(post._id)) }
       );
     } else {
-      form.setValue("categories", [...current, id], {
-        shouldValidate: true,
-      });
+      const createValues = values as PostCreateFormValues;
+      if (!createValues.image) return;
+      createPost.mutate(
+        {
+          title: createValues.title,
+          content: createValues.content,
+          categories: createValues.categories,
+          tags: createValues.tags,
+          image: createValues.image,
+        },
+        { onSuccess: () => router.push(ROUTES.posts) }
+      );
     }
   };
 
@@ -80,61 +144,34 @@ export function PostForm() {
         className="mx-auto max-w-3xl space-y-8"
       >
         <div className="rounded-2xl border border-border/60 bg-card/50 p-6 shadow-sm backdrop-blur-md sm:p-8">
-          <div className="grid gap-6 sm:grid-cols-2">
-            <FormInput
-              control={form.control}
-              name="title"
-              label="Title"
-              placeholder="Post title"
-              className="sm:col-span-2"
-              disabled={createPost.isPending}
-              onChange={(value) => {
-                if (!slugManuallyEdited.current) {
-                  form.setValue("slug", generateSlug(value), {
-                    shouldValidate: true,
-                  });
-                }
-              }}
-            />
-            <FormInput
-              control={form.control}
-              name="slug"
-              label="Slug"
-              placeholder="post-url-slug"
-              disabled={createPost.isPending}
-              onChange={() => {
-                slugManuallyEdited.current = true;
-              }}
-            />
-            <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tag</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={createPost.isPending || tagsLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="h-11 rounded-xl">
-                        <SelectValue placeholder="Select a tag" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {tags.map((tag) => (
-                        <SelectItem key={tag._id} value={tag._id}>
-                          {tag.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormInput
+            control={form.control}
+            name="title"
+            label="Title"
+            placeholder="Post title"
+            disabled={isPending}
+          />
+        </div>
+
+        <div className="rounded-2xl border border-border/60 bg-card/50 p-6 shadow-sm backdrop-blur-md sm:p-8">
+          <FormField
+            control={form.control}
+            name="image"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cover image</FormLabel>
+                <FormControl>
+                  <ImageUpload
+                    value={field.value as File | null | undefined}
+                    previewUrl={isEdit ? resolveImageUrl(post?.image) : null}
+                    onChange={(file) => field.onChange(file)}
+                    disabled={isPending}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="rounded-2xl border border-border/60 bg-card/50 p-6 shadow-sm backdrop-blur-md sm:p-8">
@@ -145,32 +182,35 @@ export function PostForm() {
               <FormItem>
                 <FormLabel>Categories</FormLabel>
                 <FormControl>
-                  <div className="flex flex-wrap gap-2">
-                    {categoriesLoading && (
-                      <p className="text-sm text-muted-foreground">
-                        Loading categories...
-                      </p>
-                    )}
-                    {!categoriesLoading && categories.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        No categories available. Create one first.
-                      </p>
-                    )}
-                    {categories.map((cat) => {
-                      const selected = selectedCategories.includes(cat._id);
-                      return (
-                        <Badge
-                          key={cat._id}
-                          variant={selected ? "default" : "outline"}
-                          className="cursor-pointer rounded-lg px-3 py-1.5 transition-all hover:scale-[1.02]"
-                          onClick={() => toggleCategory(cat._id)}
-                        >
-                          {cat.name}
-                          {selected && <X className="ml-1 size-3" />}
-                        </Badge>
-                      );
-                    })}
-                  </div>
+                  <MultiSelectBadges
+                    items={categories}
+                    selected={selectedCategories}
+                    onToggle={toggleCategory}
+                    loading={categoriesLoading}
+                    emptyMessage="No categories available. Create one first."
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="rounded-2xl border border-border/60 bg-card/50 p-6 shadow-sm backdrop-blur-md sm:p-8">
+          <FormField
+            control={form.control}
+            name="tags"
+            render={() => (
+              <FormItem>
+                <FormLabel>Tags</FormLabel>
+                <FormControl>
+                  <MultiSelectBadges
+                    items={tags}
+                    selected={selectedTags}
+                    onToggle={toggleTag}
+                    loading={tagsLoading}
+                    emptyMessage="No tags available. Create one first."
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -189,7 +229,7 @@ export function PostForm() {
                   <RichTextEditor
                     value={field.value}
                     onChange={field.onChange}
-                    disabled={createPost.isPending}
+                    disabled={isPending}
                   />
                 </FormControl>
                 <FormMessage />
@@ -200,10 +240,10 @@ export function PostForm() {
 
         <div className="flex justify-end gap-3">
           <SubmitButton
-            isLoading={createPost.isPending}
+            isLoading={isPending}
             disabled={tagsLoading || categoriesLoading}
           >
-            Publish Post
+            {isEdit ? "Save Changes" : "Publish Post"}
           </SubmitButton>
         </div>
       </form>

@@ -23,7 +23,7 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
         transition={{ duration: 0.35, delay: 0.05, ease: "easeOut" }}
         className="space-y-1"
       >
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
           {title}
         </h1>
         {description && (

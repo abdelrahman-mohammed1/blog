@@ -7,8 +7,9 @@
 ممكن يعمل upload صورة 
 ال post هيبقي formData وهبعت ال image في key اسمه image 
 ال view بتاع كل حاجه انه يقدر يخش علي الحاجه ويقدر يشوف التفاصيل الي جوها  
-تتغير ال ui بتاع ال posts الي برها عشان في صورة هتتضاف 
-
+تتغير ال ui بتاع ال posts الي برها عشان في صورة هتتضاف  
+لما يدوس علي ال post او ال tag او ال category 
+يقدر يخش يشوف التفاصيل و يعملها update كمان 
 FILTERS : 
  1- FILTER BY CATEGORY 
  2- FILTER BY TAG 
@@ -16,3 +17,6 @@ FILTERS :
  4- SEARCH IN ALL (POSTS-TAG-CATEGORY)
  5- SORT BY VIEWS IN POSTS 
  
+لما تخلص حتة ال view post  
+لما الراجل بعقد اكتر من 5 ثواني ابعت ال request بتاع ال view 
+وضيف ال views بتاعت ال Icon بتاع العين والعدد بس كده 

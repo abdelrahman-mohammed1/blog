@@ -24,8 +24,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
         className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-500/10 via-background to-background"
       />
 
-      <aside className="hidden w-64 shrink-0 lg:block">
-        <Sidebar className="fixed inset-y-0 left-0 z-40 w-64" />
+      <aside className="hidden w-[17.5rem] shrink-0 lg:block">
+        <Sidebar className="fixed inset-y-0 left-0 z-40 w-[17.5rem]" />
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

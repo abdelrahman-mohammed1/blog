@@ -5,10 +5,8 @@ import {
   FileText,
   FolderOpen,
   LayoutDashboard,
-  PenSquare,
   PodcastIcon,
   Tags,
-  User,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,66 +25,75 @@ interface SidebarProps {
   className?: string;
 }
 
+function isNavActive(pathname: string, href: string) {
+  if (href === ROUTES.dashboard) return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function Sidebar({ onNavigate, className }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-xl",
+        "flex h-full flex-col border-r border-border/50 bg-sidebar/90 backdrop-blur-xl",
         className
       )}
     >
-      <div className="flex h-16 items-center gap-2 border-b border-border/60 px-6">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-violet-500 shadow-xl shadow-violet-500/20">
-          <PodcastIcon className="size-4 text-white" />
+      <div className="flex h-[4.5rem] items-center gap-3 border-b border-border/50 px-7 py-5">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-violet-500 shadow-lg shadow-violet-500/25 transition-transform hover:scale-[1.02]">
+          <PodcastIcon className="size-[18px] text-white" />
         </div>
-        <div>
-          <p className="text-sm font-semibold tracking-tight">Blog</p>
-          <p className="text-xs text-muted-foreground">Dashboard</p>
+        <div className="space-y-0.5">
+          <p className="font-heading text-[15px] font-bold tracking-tight">
+            Blog CMS
+          </p>
+          <p className="text-[11px] text-muted-foreground">Content studio</p>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1.5 px-5 py-6">
+        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+          Menu
+        </p>
         {navItems.map((item, index) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== ROUTES.dashboard &&
-              pathname.startsWith(item.href) &&
-              item.href !== ROUTES.postsNew) ||
-            (item.href === ROUTES.postsNew && pathname === ROUTES.postsNew);
-
+          const isActive = isNavActive(pathname, item.href);
           const Icon = item.icon;
 
           return (
             <Link key={item.href} href={item.href} onClick={onNavigate}>
               <motion.div
-                initial={{ opacity: 0, x: -12 }}
+                initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.04, duration: 0.25 }}
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                  "group relative flex items-center gap-3.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-border/50"
+                    : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
                 )}
               >
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-violet-500" />
+                )}
                 <Icon
                   className={cn(
-                    "size-4 shrink-0 transition-colors",
-                    isActive ? "text-violet-500" : "group-hover:text-foreground"
+                    "size-[18px] shrink-0 transition-colors duration-200",
+                    isActive
+                      ? "text-violet-500"
+                      : "text-muted-foreground group-hover:text-foreground"
                   )}
                 />
-                {item.label}
+                <span className="tracking-tight">{item.label}</span>
               </motion.div>
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-border/60 p-4">
-        <p className="text-xs text-muted-foreground">
-          Built by Moemen Adam {new Date().getFullYear()}
+      <div className="border-t border-border/50 px-7 py-5">
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          Built by Moemen Adam · {new Date().getFullYear()}
         </p>
       </div>
     </aside>

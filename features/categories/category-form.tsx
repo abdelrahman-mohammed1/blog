@@ -5,25 +5,48 @@ import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/shared/form-input";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { Form } from "@/components/ui/form";
-import { useCreateCategory } from "@/hooks/use-categories";
+import { useCreateCategory, useUpdateCategory } from "@/hooks/use-categories";
 import {
   categorySchema,
   type CategoryFormValues,
 } from "@/lib/validations";
 
-export function CategoryForm() {
+interface CategoryFormProps {
+  mode?: "create" | "edit";
+  categoryId?: string;
+  defaultValues?: CategoryFormValues;
+  onSuccess?: () => void;
+}
+
+export function CategoryForm({
+  mode = "create",
+  categoryId,
+  defaultValues,
+  onSuccess,
+}: CategoryFormProps) {
   const createCategory = useCreateCategory();
+  const updateCategory = useUpdateCategory(categoryId ?? "");
+  const isEdit = mode === "edit" && !!categoryId;
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
-    defaultValues: { name: "" },
+    defaultValues: defaultValues ?? { name: "" },
   });
 
   const onSubmit = (values: CategoryFormValues) => {
-    createCategory.mutate(values, {
-      onSuccess: () => form.reset(),
-    });
+    if (isEdit) {
+      updateCategory.mutate(values, { onSuccess });
+    } else {
+      createCategory.mutate(values, {
+        onSuccess: () => {
+          form.reset();
+          onSuccess?.();
+        },
+      });
+    }
   };
+
+  const isPending = createCategory.isPending || updateCategory.isPending;
 
   return (
     <Form {...form}>
@@ -37,10 +60,10 @@ export function CategoryForm() {
           label="Category name"
           placeholder="e.g. technology"
           className="flex-1"
-          disabled={createCategory.isPending}
+          disabled={isPending}
         />
-        <SubmitButton isLoading={createCategory.isPending}>
-          Add Category
+        <SubmitButton isLoading={isPending}>
+          {isEdit ? "Save Category" : "Add Category"}
         </SubmitButton>
       </form>
     </Form>

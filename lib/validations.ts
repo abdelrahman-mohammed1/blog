@@ -16,24 +16,47 @@ export const tagSchema = z.object({
     .regex(/^[a-zA-Z0-9_\-\s\u0600-\u06FF]+$/, "Invalid characters in name"),
 });
 
-export const postSchema = z.object({
+const imageFileSchema = z
+  .custom<File>((val) => val instanceof File, "Image is required")
+  .refine((file) => file.size <= 5 * 1024 * 1024, "Image must be under 5MB")
+  .refine(
+    (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type),
+    "Only JPEG, PNG, WebP, or GIF images are allowed"
+  );
+
+export const postCreateSchema = z.object({
   title: z
     .string()
     .min(3, "Title must be at least 3 characters")
     .max(200, "Title is too long"),
-  slug: z
-    .string()
-    .min(3, "Slug must be at least 3 characters")
-    .max(200, "Slug is too long")
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase with hyphens only"),
   content: z
     .string()
     .min(10, "Content must be at least 10 characters")
     .max(50_000, "Content is too long"),
   categories: z.array(z.string()),
-  tags: z.string().min(1, "Please select a tag"),
+  tags: z.array(z.string()).min(1, "Select at least one tag"),
+  image: imageFileSchema,
+});
+
+export const postUpdateSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Title must be at least 3 characters")
+    .max(200, "Title is too long"),
+  content: z
+    .string()
+    .min(10, "Content must be at least 10 characters")
+    .max(50_000, "Content is too long"),
+  categories: z.array(z.string()),
+  tags: z.array(z.string()).min(1, "Select at least one tag"),
+  image: z
+    .custom<File | null | undefined>(
+      (val) => val === null || val === undefined || val instanceof File
+    )
+    .optional(),
 });
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 export type TagFormValues = z.infer<typeof tagSchema>;
-export type PostFormValues = z.infer<typeof postSchema>;
+export type PostCreateFormValues = z.infer<typeof postCreateSchema>;
+export type PostUpdateFormValues = z.infer<typeof postUpdateSchema>;

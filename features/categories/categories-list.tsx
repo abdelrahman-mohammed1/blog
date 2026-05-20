@@ -1,40 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import { FolderOpen, Trash2 } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { DataTable, type Column } from "@/components/shared/data-table";
+import { DebouncedSearch } from "@/components/shared/debounced-search";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ListPagination } from "@/components/shared/list-pagination";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useUrlParams } from "@/hooks/use-url-params";
 import { useCategories, useDeleteCategory } from "@/hooks/use-categories";
+import { buildListParams } from "@/lib/query-params";
+import { ROUTES } from "@/lib/constants";
 import type { Category } from "@/types/category";
 
 export function CategoriesList() {
-  const { data, isLoading, isError, error } = useCategories();
-  const deleteCategory = useDeleteCategory();
+  const { searchParams, updateParams, page } = useUrlParams();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const deleteCategory = useDeleteCategory();
+
+  const apiParams = useMemo(() => buildListParams(searchParams), [searchParams]);
+  const { data, isLoading, isFetching, isError, error } = useCategories({
+    page,
+    search: apiParams.search as string | undefined,
+  });
+
+  const categories = data?.data ?? [];
+  const meta = data?.meta;
+  const searchValue = searchParams.get("search") ?? "";
+
+  const handleSearch = useCallback(
+    (value: string) => updateParams({ search: value || null }),
+    [updateParams]
+  );
 
   const columns: Column<Category>[] = [
     {
       key: "name",
       header: "Name",
       cell: (item) => (
-        <div className="flex items-center gap-2">
+        <Link
+          href={ROUTES.category(item._id)}
+          className="flex items-center gap-2 font-medium transition-colors hover:text-primary"
+        >
           <FolderOpen className="size-4 text-violet-500" />
-          <span className="font-medium">{item.name}</span>
-        </div>
+          {item.name}
+        </Link>
       ),
     },
     {
-      key: "id",
-      header: "ID",
+      key: "slug",
+      header: "Slug",
       cell: (item) => (
-        <Badge variant="secondary" className="font-mono text-xs">
-          {item._id.slice(-8)}
-        </Badge>
+        <span className="font-mono text-xs text-muted-foreground">
+          {item.slug ?? "—"}
+        </span>
       ),
+    },
+    {
+      key: "created",
+      header: "Created",
+      cell: (item) =>
+        item.createdAt
+          ? new Date(item.createdAt).toLocaleDateString()
+          : "—",
     },
     {
       key: "actions",
@@ -54,7 +85,7 @@ export function CategoriesList() {
     },
   ];
 
-  if (isLoading) return <TableSkeleton rows={4} cols={3} />;
+  if (isLoading) return <TableSkeleton rows={4} cols={4} />;
 
   if (isError) {
     return (
@@ -65,23 +96,43 @@ export function CategoriesList() {
     );
   }
 
-  if (!data?.length) {
-    return (
-      <EmptyState
-        icon={FolderOpen}
-        title="No categories yet"
-        description="Create your first category using the form above."
-      />
-    );
-  }
-
   return (
-    <>
-      <DataTable
-        columns={columns}
-        data={data}
-        keyExtractor={(item) => item._id}
+    <div className="space-y-6">
+      <DebouncedSearch
+        value={searchValue}
+        onDebouncedChange={handleSearch}
+        placeholder="Search categories..."
       />
+
+      {isFetching && !isLoading && (
+        <p className="text-xs text-muted-foreground">Updating...</p>
+      )}
+
+      {!categories.length ? (
+        <EmptyState
+          icon={FolderOpen}
+          title={searchValue ? "No matching categories" : "No categories yet"}
+          description={
+            searchValue
+              ? `No results for "${searchValue}"`
+              : "Create your first category using the form above."
+          }
+        />
+      ) : (
+        <DataTable
+          columns={columns}
+          data={categories}
+          keyExtractor={(item) => item._id}
+        />
+      )}
+
+      {meta && (
+        <ListPagination
+          meta={meta}
+          onPageChange={(p) => updateParams({ page: String(p) }, { resetPage: false })}
+        />
+      )}
+
       <ConfirmDeleteDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
@@ -96,6 +147,6 @@ export function CategoriesList() {
           }
         }}
       />
-    </>
+    </div>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { TagForm } from "@/features/tags/tag-form";
 import { TagsList } from "@/features/tags/tags-list";
 import { PageHeader } from "@/components/shared/page-header";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function TagsPage() {
@@ -15,14 +17,16 @@ export default function TagsPage() {
 
       <Card className="rounded-2xl border-border/60 bg-card/50 shadow-sm backdrop-blur-md">
         <CardHeader>
-          <CardTitle className="text-base">Add tag</CardTitle>
+          <CardTitle className="font-heading text-base">Add tag</CardTitle>
         </CardHeader>
         <CardContent>
           <TagForm />
         </CardContent>
       </Card>
 
-      <TagsList />
+      <Suspense fallback={<TableSkeleton rows={4} cols={4} />}>
+        <TagsList />
+      </Suspense>
     </div>
   );
 }
