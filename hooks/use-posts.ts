@@ -28,6 +28,7 @@ export function usePosts(params?: PostsQueryParams) {
   return useQuery({
     queryKey: QUERY_KEYS.posts(queryParams),
     queryFn: () => postsService.getAll(queryParams),
+    placeholderData: (previousData) => previousData,
   });
 }
 

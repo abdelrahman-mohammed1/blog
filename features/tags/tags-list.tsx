@@ -115,7 +115,7 @@ export function TagsList() {
     },
   ];
 
-  if (isLoading) return <TableSkeleton rows={4} cols={4} />;
+  // if (isLoading) return <TableSkeleton rows={4} cols={4} />;
 
   if (isError) {
     return (
@@ -137,33 +137,40 @@ export function TagsList() {
       {isFetching && !isLoading && (
         <p className="text-xs text-muted-foreground">Updating...</p>
       )}
+      <>
+        {isLoading ? (
+          <TableSkeleton rows={4} cols={4} />
+        ) : (
+          <>
+            {!tags.length ? (
+              <EmptyState
+                icon={Tags}
+                title={searchValue ? "No matching tags" : "No tags yet"}
+                description={
+                  searchValue
+                    ? `No results for "${searchValue}"`
+                    : "Create your first tag using the form above."
+                }
+              />
+            ) : (
+              <DataTable
+                columns={columns}
+                data={tags}
+                keyExtractor={(item) => item._id}
+              />
+            )}
 
-      {!tags.length ? (
-        <EmptyState
-          icon={Tags}
-          title={searchValue ? "No matching tags" : "No tags yet"}
-          description={
-            searchValue
-              ? `No results for "${searchValue}"`
-              : "Create your first tag using the form above."
-          }
-        />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={tags}
-          keyExtractor={(item) => item._id}
-        />
-      )}
-
-      {meta && (
-        <ListPagination
-          meta={meta}
-          onPageChange={(p) =>
-            updateParams({ page: String(p) }, { resetPage: false })
-          }
-        />
-      )}
+            {meta && (
+              <ListPagination
+                meta={meta}
+                onPageChange={(p) =>
+                  updateParams({ page: String(p) }, { resetPage: false })
+                }
+              />
+            )}
+          </>
+        )}
+      </>
 
       <ConfirmDeleteDialog
         open={!!deleteId}

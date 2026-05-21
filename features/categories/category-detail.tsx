@@ -107,11 +107,13 @@ export function CategoryDetail({ id }: CategoryDetailProps) {
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl bg-muted/50 p-4">
+          <div className="min-w-0 overflow-x-auto rounded-xl bg-muted/50 p-4 sm:col-span-2 lg:col-span-1">
             <p className="text-xs text-muted-foreground">Created</p>
-            <p className="mt-1 flex items-center gap-2 text-sm font-medium">
-              <Calendar className="size-4" />
-              {formatDate(category.createdAt)}
+            <p className="mt-1 flex min-w-0 items-center gap-2 text-sm font-medium">
+              <Calendar className="size-4 shrink-0" />
+              <span className="whitespace-nowrap">
+                {formatDate(category.createdAt)}
+              </span>
             </p>
           </div>
           <div className="rounded-xl bg-muted/50 p-4">

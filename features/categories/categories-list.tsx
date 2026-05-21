@@ -104,7 +104,7 @@ export function CategoriesList() {
     },
   ];
 
-  if (isLoading) return <TableSkeleton rows={4} cols={4} />;
+  // if (isLoading) return <TableSkeleton rows={4} cols={4} />;
 
   if (isError) {
     return (
@@ -126,34 +126,42 @@ export function CategoriesList() {
       {isFetching && !isLoading && (
         <p className="text-xs text-muted-foreground">Updating...</p>
       )}
+      <>
+        {isLoading ? (
+          <TableSkeleton rows={4} cols={4} />
+        ) : (
+          <>
+            {!categories.length ? (
+              <EmptyState
+                icon={FolderOpen}
+                title={
+                  searchValue ? "No matching categories" : "No categories yet"
+                }
+                description={
+                  searchValue
+                    ? `No results for "${searchValue}"`
+                    : "Create your first category using the form above."
+                }
+              />
+            ) : (
+              <DataTable
+                columns={columns}
+                data={categories}
+                keyExtractor={(item) => item._id}
+              />
+            )}
 
-      {!categories.length ? (
-        <EmptyState
-          icon={FolderOpen}
-          title={searchValue ? "No matching categories" : "No categories yet"}
-          description={
-            searchValue
-              ? `No results for "${searchValue}"`
-              : "Create your first category using the form above."
-          }
-        />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={categories}
-          keyExtractor={(item) => item._id}
-        />
-      )}
-
-      {meta && (
-        <ListPagination
-          meta={meta}
-          onPageChange={(p) =>
-            updateParams({ page: String(p) }, { resetPage: false })
-          }
-        />
-      )}
-
+            {meta && (
+              <ListPagination
+                meta={meta}
+                onPageChange={(p) =>
+                  updateParams({ page: String(p) }, { resetPage: false })
+                }
+              />
+            )}
+          </>
+        )}
+      </>
       <ConfirmDeleteDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}

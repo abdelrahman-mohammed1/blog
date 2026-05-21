@@ -44,7 +44,15 @@ export function PostsList() {
     [updateParams],
   );
 
-  if (isLoading) return <CardGridSkeleton count={6} />;
+  const hasFilters =
+    !!searchValue ||
+    !!searchParams.get("category") ||
+    !!searchParams.get("tag") ||
+    (!!searchParams.get("sort") && searchParams.get("sort") !== "default");
+
+  const isGridLoading = isLoading || (isFetching && posts.length === 0);
+  const showEmptyNoPosts = !isGridLoading && !posts.length && !hasFilters;
+  const showEmptyNoMatch = !isGridLoading && !posts.length && hasFilters;
 
   if (isError) {
     return (
@@ -55,13 +63,7 @@ export function PostsList() {
     );
   }
 
-  const hasFilters =
-    !!searchValue ||
-    !!searchParams.get("category") ||
-    !!searchParams.get("tag") ||
-    !!searchParams.get("sort");
-
-  if (!posts.length && !hasFilters) {
+  if (showEmptyNoPosts) {
     return (
       <EmptyState
         icon={FileText}
@@ -102,35 +104,35 @@ export function PostsList() {
         />
       </div>
 
-      {isFetching && !isLoading && (
-        <p className="text-xs text-muted-foreground">Updating...</p>
-      )}
-
-      {posts.length === 0 ? (
+      {isGridLoading ? (
+        <CardGridSkeleton count={6} />
+      ) : showEmptyNoMatch ? (
         <EmptyState
           title="No matching posts"
           description="Try adjusting your search or filters."
         />
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {posts.map((post, index) => (
-            <PostCard
-              key={post._id}
-              post={post}
-              index={index}
-              onDelete={setDeleteId}
-            />
-          ))}
-        </div>
-      )}
+        <>
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {posts.map((post, index) => (
+              <PostCard
+                key={post._id}
+                post={post}
+                index={index}
+                onDelete={setDeleteId}
+              />
+            ))}
+          </div>
 
-      {meta && (
-        <ListPagination
-          meta={meta}
-          onPageChange={(p) =>
-            updateParams({ page: String(p) }, { resetPage: false })
-          }
-        />
+          {meta && (
+            <ListPagination
+              meta={meta}
+              onPageChange={(p) =>
+                updateParams({ page: String(p) }, { resetPage: false })
+              }
+            />
+          )}
+        </>
       )}
 
       <ConfirmDeleteDialog

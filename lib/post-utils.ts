@@ -12,23 +12,27 @@ export function resolveImageUrl(image?: string): string | null {
 }
 
 export function normalizeRefs<T extends { _id: string; name?: string }>(
-  items: string[] | T[] | undefined
+  items: string[] | T[] | undefined,
 ): T[] {
   if (!items?.length) return [];
   if (typeof items[0] === "string") {
-    return (items as string[]).map((id) => ({ _id: id } as T));
+    return (items as string[]).map((id) => ({ _id: id }) as T);
   }
   return items as T[];
 }
 
 export function getCategoryNames(post: Post): string[] {
   return normalizeRefs<CategoryRef>(post.categories).map(
-    (c) => c.name ?? c._id.slice(-6)
+    (c) => c.name ?? c._id.slice(-6),
   );
 }
 
 export function getTagNames(post: Post): string[] {
-  return normalizeRefs<TagRef>(post.tags).map((t) => t?.name ?? t?._id?.slice(-6));
+  console.log({ postAbdelrahman: post });
+  return normalizeRefs<TagRef>(post.tags).map((t) => {
+    console.log({ tagAbdelrahman: t });
+    return t?.name ?? t?._id?.slice(-6);
+  });
 }
 
 export function getCategoryIds(post: Post): string[] {
