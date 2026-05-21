@@ -25,11 +25,11 @@ export function buildPostsParams(
   const base = buildListParams(searchParams) as PostsQueryParams &
     Record<string, string | number>;
 
-  const category = searchParams.get("category");
-  if (category) base.category = category;
+  const categories = searchParams.get("categories");
+  if (categories) base.categories = categories;
 
-  const tag = searchParams.get("tag");
-  if (tag) base.tag = tag;
+  const tags = searchParams.get("tags");
+  if (tags) base.tags = tags;
 
   const sort = searchParams.get("sort");
   if (sort === "views" || sort === "-views") {

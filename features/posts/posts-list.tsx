@@ -28,8 +28,8 @@ export function PostsList() {
   const { data, isLoading, isFetching, isError, error } = usePosts({
     page,
     search: apiParams.search as string | undefined,
-    category: apiParams.category as string | undefined,
-    tag: apiParams.tag as string | undefined,
+    categories: apiParams.categories as string | undefined,
+    tags: apiParams.tags as string | undefined,
     sort: (apiParams.sort as "views" | "-views") ?? "-views",
   });
 
@@ -46,8 +46,8 @@ export function PostsList() {
 
   const hasFilters =
     !!searchValue ||
-    !!searchParams.get("category") ||
-    !!searchParams.get("tag") ||
+    !!searchParams.get("categories") ||
+    !!searchParams.get("tags") ||
     (!!searchParams.get("sort") && searchParams.get("sort") !== "default");
 
   const isGridLoading = isLoading || (isFetching && posts.length === 0);
@@ -91,11 +91,11 @@ export function PostsList() {
           placeholder="Search posts..."
         />
         <PostsFilters
-          category={searchParams.get("category") ?? ""}
-          tag={searchParams.get("tag") ?? ""}
+          category={searchParams.get("categories") ?? ""}
+          tag={searchParams.get("tags") ?? ""}
           sort={searchParams.get("sort") ?? ""}
-          onCategoryChange={(v) => updateParams({ category: v || null })}
-          onTagChange={(v) => updateParams({ tag: v || null })}
+          onCategoryChange={(v) => updateParams({ categories: v || null })}
+          onTagChange={(v) => updateParams({ tags: v || null })}
           onSortChange={(v) =>
             updateParams({
               sort: v === null || v === "-views" ? null : v,

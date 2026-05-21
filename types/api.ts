@@ -39,7 +39,7 @@ export interface ListQueryParams {
 }
 
 export interface PostsQueryParams extends ListQueryParams {
-  category?: string;
-  tag?: string;
+  categories?: string;
+  tags?: string;
   sort?: "views" | "-views";
 }

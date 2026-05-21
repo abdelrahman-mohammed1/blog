@@ -20,8 +20,8 @@ export function usePosts(params?: PostsQueryParams) {
     limit: params?.limit ?? DEFAULT_PAGE_LIMIT,
     page: params?.page ?? 1,
     ...(params?.search ? { search: params.search } : {}),
-    ...(params?.category ? { category: params.category } : {}),
-    ...(params?.tag ? { tag: params.tag } : {}),
+    ...(params?.categories ? { categories: params.categories } : {}),
+    ...(params?.tags ? { tags: params.tags } : {}),
     ...(params?.sort ? { sort: params.sort } : {}),
   };
 

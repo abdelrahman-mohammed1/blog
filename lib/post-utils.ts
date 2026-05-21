@@ -28,11 +28,9 @@ export function getCategoryNames(post: Post): string[] {
 }
 
 export function getTagNames(post: Post): string[] {
-  console.log({ postAbdelrahman: post });
-  return normalizeRefs<TagRef>(post.tags).map((t) => {
-    console.log({ tagAbdelrahman: t });
-    return t?.name ?? t?._id?.slice(-6);
-  });
+  return normalizeRefs<TagRef>(post.tags).map(
+    (t) => t?.name ?? t?._id?.slice(-6)
+  );
 }
 
 export function getCategoryIds(post: Post): string[] {
