@@ -40,7 +40,7 @@ export function getCategoryIds(post: Post): string[] {
 }
 
 export function getTagIds(post: Post): string[] {
-  return normalizeRefs<TagRef>(post.tags).map((t) => t._id);
+  return normalizeRefs<TagRef>(post?.tags).map((t) => t?._id);
 }
 
 export function buildPostFormData(values: {

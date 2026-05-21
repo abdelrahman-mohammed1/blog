@@ -23,7 +23,7 @@ export function SubmitButton({
       type="submit"
       disabled={isLoading || disabled}
       className={cn(
-        "h-11 rounded-xl px-6 shadow-sm transition-all hover:shadow-md",
+        "h-11 rounded-xl cursor-pointer px-6 shadow-sm transition-all hover:shadow-md",
         className
       )}
     >

@@ -19,7 +19,7 @@ export const tagsService = {
   },
 
   update: async (id: string, payload: UpdateTagPayload): Promise<Tag> => {
-    const { data } = await api.put<unknown>(`/tags/${id}`, payload);
+    const { data } = await api.patch<unknown>(`/tags/${id}`, payload);
     return unwrapSingle<Tag>(data);
   },
 

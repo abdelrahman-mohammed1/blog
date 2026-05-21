@@ -32,12 +32,9 @@ export const postCreateSchema = z.object({
     .string()
     .min(3, "Title must be at least 3 characters")
     .max(200, "Title is too long"),
-  content: z
-    .string()
-    .min(10, "Content must be at least 10 characters")
-    .max(50_000, "Content is too long"),
+  content: z.string(),
   categories: z.array(z.string()),
-  tags: z.array(z.string()).min(1, "Select at least one tag"),
+  tags: z.array(z.string()),
   image: imageFileSchema,
 });
 
@@ -46,10 +43,7 @@ export const postUpdateSchema = z.object({
     .string()
     .min(3, "Title must be at least 3 characters")
     .max(200, "Title is too long"),
-  content: z
-    .string()
-    .min(10, "Content must be at least 10 characters")
-    .max(50_000, "Content is too long"),
+  content: z.string(),
   categories: z.array(z.string()),
   tags: z.array(z.string()),
   image: z
