@@ -78,8 +78,8 @@ export function PostsFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="default">Default order</SelectItem>
-          <SelectItem value="views_desc">Most viewed</SelectItem>
-          <SelectItem value="views_asc">Least viewed</SelectItem>
+          <SelectItem value="-views"> Most viewed</SelectItem>
+          <SelectItem value="views">Least viewed</SelectItem>
         </SelectContent>
       </Select>
     </div>

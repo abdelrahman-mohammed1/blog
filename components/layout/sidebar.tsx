@@ -56,6 +56,7 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
         <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
           Menu
         </p>
+        <div className="flex flex-col gap-3.5">
         {navItems.map((item, index) => {
           const isActive = isNavActive(pathname, item.href);
           const Icon = item.icon;
@@ -67,7 +68,7 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.04, duration: 0.25 }}
                 className={cn(
-                  "group relative flex items-center gap-3.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200",
+                  "group relative flex items-center gap-4 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-border/50"
                     : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
@@ -88,7 +89,8 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
               </motion.div>
             </Link>
           );
-        })}
+        })} 
+        </div>
       </nav>
 
       <div className="border-t border-border/50 px-7 py-5">

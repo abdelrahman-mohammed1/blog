@@ -31,7 +31,7 @@ export function buildPostsParams(
   if (tag) base.tag = tag;
 
   const sort = searchParams.get("sort");
-  if (sort === "views_desc" || sort === "views_asc") {
+  if (sort === "views" || sort === "-views") {
     base.sort = sort;
   }
 

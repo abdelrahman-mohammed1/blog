@@ -8,7 +8,7 @@ import { api, unwrapPaginated, unwrapSingle } from "./api";
 
 export const categoriesService = {
   getAll: async (
-    params?: ListQueryParams
+    params?: ListQueryParams,
   ): Promise<PaginatedResult<Category>> => {
     const { data } = await api.get<unknown>("/categories", { params });
     return unwrapPaginated<Category>(data);
@@ -26,9 +26,9 @@ export const categoriesService = {
 
   update: async (
     id: string,
-    payload: UpdateCategoryPayload
+    payload: UpdateCategoryPayload,
   ): Promise<Category> => {
-    const { data } = await api.put<unknown>(`/categories/${id}`, payload);
+    const { data } = await api.patch<unknown>(`/categories/${id}`, payload);
     return unwrapSingle<Category>(data);
   },
 

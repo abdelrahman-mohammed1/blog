@@ -25,4 +25,5 @@ export const ROUTES = {
   post: (id: string) => `/posts/${id}`,
 };
 
-export const VIEW_DELAY_MS = 5000;
+/** Time on post detail before POST /posts/:id/view */
+export const POST_VIEW_DELAY_MS = 10_000;

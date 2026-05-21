@@ -42,7 +42,7 @@ export const postsService = {
 
   update: async (id: string, payload: UpdatePostPayload): Promise<Post> => {
     const formData = buildPostFormData(toFormValues(payload));
-    const { data } = await api.put<unknown>(`/posts/${id}`, formData);
+    const { data } = await api.patch<unknown>(`/posts/${id}`, formData);
     return unwrapSingle<Post>(data);
   },
 
@@ -51,7 +51,7 @@ export const postsService = {
   },
 
   incrementViews: async (id: string): Promise<Post> => {
-    const { data } = await api.patch<unknown>(`/posts/${id}/view`);
+    const { data } = await api.get<unknown>(`/posts/${id}/view`);
     return unwrapSingle<Post>(data);
   },
 };

@@ -20,14 +20,17 @@ export function PostsList() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deletePost = useDeletePost();
 
-  const apiParams = useMemo(() => buildPostsParams(searchParams), [searchParams]);
+  const apiParams = useMemo(
+    () => buildPostsParams(searchParams),
+    [searchParams],
+  );
 
   const { data, isLoading, isFetching, isError, error } = usePosts({
     page,
     search: apiParams.search as string | undefined,
     category: apiParams.category as string | undefined,
     tag: apiParams.tag as string | undefined,
-    sort: apiParams.sort as "views_desc" | "views_asc" | undefined,
+    sort: apiParams.sort as "views" | "-views" | undefined,
   });
 
   const posts = data?.data ?? [];
@@ -38,7 +41,7 @@ export function PostsList() {
     (value: string) => {
       updateParams({ search: value || null });
     },
-    [updateParams]
+    [updateParams],
   );
 
   if (isLoading) return <CardGridSkeleton count={6} />;
@@ -120,7 +123,9 @@ export function PostsList() {
       {meta && (
         <ListPagination
           meta={meta}
-          onPageChange={(p) => updateParams({ page: String(p) }, { resetPage: false })}
+          onPageChange={(p) =>
+            updateParams({ page: String(p) }, { resetPage: false })
+          }
         />
       )}
 

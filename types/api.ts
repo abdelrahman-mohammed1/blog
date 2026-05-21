@@ -41,5 +41,5 @@ export interface ListQueryParams {
 export interface PostsQueryParams extends ListQueryParams {
   category?: string;
   tag?: string;
-  sort?: "views_desc" | "views_asc";
+  sort?: "views" | "-views";
 }

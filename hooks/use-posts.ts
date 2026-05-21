@@ -76,6 +76,44 @@ export function useIncrementPostViews(id: string) {
 
   return useMutation({
     mutationFn: () => postsService.incrementViews(id),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.post(id) });
+
+      const previousPost = queryClient.getQueryData<Post>(QUERY_KEYS.post(id));
+      const previousLists = queryClient.getQueriesData<PaginatedResult<Post>>({
+        queryKey: QUERY_KEYS.posts(),
+      });
+
+      if (previousPost) {
+        queryClient.setQueryData<Post>(QUERY_KEYS.post(id), {
+          ...previousPost,
+          views: (previousPost.views ?? 0) + 1,
+        });
+      }
+
+      queryClient.setQueriesData<PaginatedResult<Post>>(
+        { queryKey: QUERY_KEYS.posts() },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            data: old.data.map((p) =>
+              p._id === id ? { ...p, views: (p.views ?? 0) + 1 } : p
+            ),
+          };
+        }
+      );
+
+      return { previousPost, previousLists };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousPost) {
+        queryClient.setQueryData(QUERY_KEYS.post(id), context.previousPost);
+      }
+      context?.previousLists?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+    },
     onSuccess: (updated) => {
       queryClient.setQueryData(QUERY_KEYS.post(id), updated);
       queryClient.setQueriesData<PaginatedResult<Post>>(
@@ -84,7 +122,9 @@ export function useIncrementPostViews(id: string) {
           if (!old) return old;
           return {
             ...old,
-            data: old.data.map((p) => (p._id === id ? { ...p, views: updated.views } : p)),
+            data: old.data.map((p) =>
+              p._id === id ? { ...p, views: updated.views } : p
+            ),
           };
         }
       );
