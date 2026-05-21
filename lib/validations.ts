@@ -20,8 +20,11 @@ const imageFileSchema = z
   .custom<File>((val) => val instanceof File, "Image is required")
   .refine((file) => file.size <= 5 * 1024 * 1024, "Image must be under 5MB")
   .refine(
-    (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type),
-    "Only JPEG, PNG, WebP, or GIF images are allowed"
+    (file) =>
+      ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(
+        file.type,
+      ),
+    "Only JPEG, PNG, WebP, or GIF images are allowed",
   );
 
 export const postCreateSchema = z.object({
@@ -48,11 +51,11 @@ export const postUpdateSchema = z.object({
     .min(10, "Content must be at least 10 characters")
     .max(50_000, "Content is too long"),
   categories: z.array(z.string()),
-  tags: z.array(z.string()).min(1, "Select at least one tag"),
+  tags: z.array(z.string()),
   image: z
-    .custom<File | null | undefined>(
-      (val) => val === null || val === undefined || val instanceof File
-    )
+    .custom<
+      File | null | undefined
+    >((val) => val === null || val === undefined || val instanceof File)
     .optional(),
 });
 

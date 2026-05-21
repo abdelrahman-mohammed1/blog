@@ -20,11 +20,7 @@ import {
 import { useCategories } from "@/hooks/use-categories";
 import { useCreatePost, useUpdatePost } from "@/hooks/use-posts";
 import { useTags } from "@/hooks/use-tags";
-import {
-  getCategoryIds,
-  getTagIds,
-  resolveImageUrl,
-} from "@/lib/post-utils";
+import { getCategoryIds, getTagIds, resolveImageUrl } from "@/lib/post-utils";
 import { ROUTES } from "@/lib/constants";
 import {
   postCreateSchema,
@@ -96,7 +92,7 @@ export function PostForm({ mode = "create", post }: PostFormProps) {
     form.setValue(
       "categories",
       current.includes(id) ? current.filter((c) => c !== id) : [...current, id],
-      { shouldValidate: true }
+      { shouldValidate: true },
     );
   };
 
@@ -105,7 +101,7 @@ export function PostForm({ mode = "create", post }: PostFormProps) {
     form.setValue(
       "tags",
       current.includes(id) ? current.filter((t) => t !== id) : [...current, id],
-      { shouldValidate: true }
+      { shouldValidate: true },
     );
   };
 
@@ -119,7 +115,7 @@ export function PostForm({ mode = "create", post }: PostFormProps) {
           tags: values.tags,
           image: values.image ?? undefined,
         },
-        { onSuccess: () => router.push(ROUTES.post(post._id)) }
+        { onSuccess: () => router.push(ROUTES.post(post._id)) },
       );
     } else {
       const createValues = values as PostCreateFormValues;
@@ -132,7 +128,7 @@ export function PostForm({ mode = "create", post }: PostFormProps) {
           tags: createValues.tags,
           image: createValues.image,
         },
-        { onSuccess: () => router.push(ROUTES.posts) }
+        { onSuccess: () => router.push(ROUTES.posts) },
       );
     }
   };
