@@ -21,7 +21,10 @@ export function TagsList() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteTag = useDeleteTag();
 
-  const apiParams = useMemo(() => buildListParams(searchParams), [searchParams]);
+  const apiParams = useMemo(
+    () => buildListParams(searchParams),
+    [searchParams],
+  );
   const { data, isLoading, isFetching, isError, error } = useTags({
     page,
     search: apiParams.search as string | undefined,
@@ -33,7 +36,7 @@ export function TagsList() {
 
   const handleSearch = useCallback(
     (value: string) => updateParams({ search: value || null }),
-    [updateParams]
+    [updateParams],
   );
 
   const columns: Column<Tag>[] = [
@@ -54,18 +57,27 @@ export function TagsList() {
       key: "slug",
       header: "Slug",
       cell: (item) => (
-        <span className="font-mono text-xs text-muted-foreground">
+        <Link
+          href={ROUTES.tag(item._id)}
+          className="flex items-center gap-2 font-medium transition-colors hover:text-primary"
+        >
           {item.slug ?? "—"}
-        </span>
+        </Link>
       ),
     },
     {
       key: "created",
       header: "Created",
-      cell: (item) =>
-        item.createdAt
-          ? new Date(item.createdAt).toLocaleDateString()
-          : "—",
+      cell: (item) => (
+        <Link
+          href={ROUTES.tag(item._id)}
+          className="flex items-center gap-2 font-medium transition-colors hover:text-primary"
+        >
+          {item?.createdAt
+            ? new Date(item?.createdAt).toLocaleDateString()
+            : "—"}
+        </Link>
+      ),
     },
     {
       key: "actions",
@@ -119,13 +131,19 @@ export function TagsList() {
           }
         />
       ) : (
-        <DataTable columns={columns} data={tags} keyExtractor={(item) => item._id} />
+        <DataTable
+          columns={columns}
+          data={tags}
+          keyExtractor={(item) => item._id}
+        />
       )}
 
       {meta && (
         <ListPagination
           meta={meta}
-          onPageChange={(p) => updateParams({ page: String(p) }, { resetPage: false })}
+          onPageChange={(p) =>
+            updateParams({ page: String(p) }, { resetPage: false })
+          }
         />
       )}
 

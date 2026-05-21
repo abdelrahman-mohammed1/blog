@@ -81,7 +81,7 @@ export function PostDetail({ id }: PostDetailProps) {
   const imageUrl = resolveImageUrl(post.image);
   const categories = getCategoryNames(post);
   const tags = getTagNames(post);
-
+  console.log({ categories, tags , post });
   return (
     <>
       <Fireworks active={isCelebrating} />

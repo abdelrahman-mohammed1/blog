@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Unkempt } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -9,10 +9,10 @@ const inter = Inter({
   display: "swap",
 });
 
-const unkempt = Unkempt({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-unkempt",
+  weight: ["500", "600", "700"],
+  variable: "--font-heading-family",
   display: "swap",
 });
 
@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${unkempt.variable}`}
+      className={`${inter.variable} ${plusJakarta.variable}`}
       suppressHydrationWarning
     >
       <body className={`${inter.className} min-h-screen antialiased`}>

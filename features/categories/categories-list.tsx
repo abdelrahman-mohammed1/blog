@@ -21,7 +21,10 @@ export function CategoriesList() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteCategory = useDeleteCategory();
 
-  const apiParams = useMemo(() => buildListParams(searchParams), [searchParams]);
+  const apiParams = useMemo(
+    () => buildListParams(searchParams),
+    [searchParams],
+  );
   const { data, isLoading, isFetching, isError, error } = useCategories({
     page,
     search: apiParams.search as string | undefined,
@@ -33,7 +36,7 @@ export function CategoriesList() {
 
   const handleSearch = useCallback(
     (value: string) => updateParams({ search: value || null }),
-    [updateParams]
+    [updateParams],
   );
 
   const columns: Column<Category>[] = [
@@ -54,18 +57,27 @@ export function CategoriesList() {
       key: "slug",
       header: "Slug",
       cell: (item) => (
-        <span className="font-mono text-xs text-muted-foreground">
+        <Link
+          href={ROUTES.category(item._id)}
+          className="flex items-center gap-2 font-medium transition-colors hover:text-primary"
+        >
           {item.slug ?? "—"}
-        </span>
+        </Link>
       ),
     },
     {
       key: "created",
       header: "Created",
-      cell: (item) =>
-        item.createdAt
-          ? new Date(item.createdAt).toLocaleDateString()
-          : "—",
+      cell: (item) => (
+        <Link
+          href={ROUTES.category(item._id)}
+          className="flex items-center gap-2 font-medium transition-colors hover:text-primary"
+        >
+          {item?.createdAt
+            ? new Date(item?.createdAt).toLocaleDateString()
+            : "—"}
+        </Link>
+      ),
     },
     {
       key: "actions",
@@ -129,7 +141,9 @@ export function CategoriesList() {
       {meta && (
         <ListPagination
           meta={meta}
-          onPageChange={(p) => updateParams({ page: String(p) }, { resetPage: false })}
+          onPageChange={(p) =>
+            updateParams({ page: String(p) }, { resetPage: false })
+          }
         />
       )}
 
