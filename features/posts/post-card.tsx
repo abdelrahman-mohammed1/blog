@@ -22,11 +22,14 @@ interface PostCardProps {
 
 function formatDate(date?: string) {
   if (!date) return "";
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
+  return new Date(date).toLocaleString("en-US", {
     year: "numeric",
-  }).format(new Date(date));
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function PostCard({ post, index = 0, onDelete }: PostCardProps) {

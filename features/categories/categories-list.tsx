@@ -74,7 +74,14 @@ export function CategoriesList() {
           className="flex items-center gap-2 font-medium transition-colors hover:text-primary"
         >
           {item?.createdAt
-            ? new Date(item?.createdAt).toLocaleDateString()
+            ? new Date(item?.createdAt as string).toLocaleString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "—"}
         </Link>
       ),

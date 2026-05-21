@@ -39,6 +39,17 @@ export function TagsList() {
     [updateParams],
   );
 
+  function formatDate(date?: string) {
+    if (!date) return "—";
+    return new Date(date).toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
   const columns: Column<Tag>[] = [
     {
       key: "name",
@@ -74,7 +85,14 @@ export function TagsList() {
           className="flex items-center gap-2 font-medium transition-colors hover:text-primary"
         >
           {item?.createdAt
-            ? new Date(item?.createdAt).toLocaleDateString()
+            ? new Date(item?.createdAt).toLocaleString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "—"}
         </Link>
       ),

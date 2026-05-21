@@ -17,9 +17,14 @@ interface CategoryDetailProps {
 
 function formatDate(date?: string) {
   if (!date) return "—";
-  return new Intl.DateTimeFormat("en", { dateStyle: "long" }).format(
-    new Date(date)
-  );
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function CategoryDetail({ id }: CategoryDetailProps) {

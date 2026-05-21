@@ -27,9 +27,14 @@ interface PostDetailProps {
 
 function formatDate(date?: string) {
   if (!date) return "—";
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "long",
-  }).format(new Date(date));
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function PostDetail({ id }: PostDetailProps) {
@@ -81,7 +86,7 @@ export function PostDetail({ id }: PostDetailProps) {
   const imageUrl = resolveImageUrl(post.image);
   const categories = getCategoryNames(post);
   const tags = getTagNames(post);
-  console.log({ categories, tags , post });
+  console.log({ categories, tags, post });
   return (
     <>
       <Fireworks active={isCelebrating} />
