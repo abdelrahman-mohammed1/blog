@@ -17,8 +17,8 @@ const unkempt = Unkempt({
 });
 
 export const metadata: Metadata = {
-  title: "Modern Blog CMS",
-  description: "Modern blog content management system",
+  title: "Moemen Blog",
+  description: "Moemen Blog content management system",
 };
 
 export default function RootLayout({
