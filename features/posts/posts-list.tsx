@@ -30,7 +30,7 @@ export function PostsList() {
     search: apiParams.search as string | undefined,
     category: apiParams.category as string | undefined,
     tag: apiParams.tag as string | undefined,
-    sort: apiParams.sort as "views" | "-views" | undefined,
+    sort: (apiParams.sort as "views" | "-views") ?? "-views",
   });
 
   const posts = data?.data ?? [];
@@ -94,7 +94,11 @@ export function PostsList() {
           sort={searchParams.get("sort") ?? ""}
           onCategoryChange={(v) => updateParams({ category: v || null })}
           onTagChange={(v) => updateParams({ tag: v || null })}
-          onSortChange={(v) => updateParams({ sort: v || null })}
+          onSortChange={(v) =>
+            updateParams({
+              sort: v === null || v === "-views" ? null : v,
+            })
+          }
         />
       </div>
 

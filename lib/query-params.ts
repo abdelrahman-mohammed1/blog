@@ -1,5 +1,6 @@
 import type { PostsQueryParams } from "@/types/api";
 import { DEFAULT_PAGE_LIMIT } from "@/lib/constants";
+import { DEFAULT_POST_SORT } from "@/lib/post-sort";
 
 export function buildListParams(
   searchParams: URLSearchParams,
@@ -33,6 +34,9 @@ export function buildPostsParams(
   const sort = searchParams.get("sort");
   if (sort === "views" || sort === "-views") {
     base.sort = sort;
+  } else if (sort !== "default" && (!sort || sort === "")) {
+    // No param in URL → default: most viewed
+    base.sort = DEFAULT_POST_SORT;
   }
 
   return base;

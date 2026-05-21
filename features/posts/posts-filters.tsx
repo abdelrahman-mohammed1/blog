@@ -9,6 +9,13 @@ import {
 } from "@/components/ui/select";
 import { useCategories } from "@/hooks/use-categories";
 import { useTags } from "@/hooks/use-tags";
+import {
+  DEFAULT_POST_SORT,
+  getSortLabel,
+  getSortSelectValue,
+  POST_SORT_OPTIONS,
+  type PostSortValue,
+} from "@/lib/post-sort";
 
 interface PostsFiltersProps {
   category: string;
@@ -16,7 +23,7 @@ interface PostsFiltersProps {
   sort: string;
   onCategoryChange: (value: string) => void;
   onTagChange: (value: string) => void;
-  onSortChange: (value: string) => void;
+  onSortChange: (value: string | null) => void;
 }
 
 export function PostsFilters({
@@ -33,6 +40,17 @@ export function PostsFilters({
   const categories = categoriesData?.data ?? [];
   const tags = tagsData?.data ?? [];
 
+  const sortValue = getSortSelectValue(sort);
+  const sortLabel = getSortLabel(sortValue);
+
+  const categoryLabel = category
+    ? (categories.find((c) => c._id === category)?.name ?? "Category")
+    : "All categories";
+
+  const tagLabel = tag
+    ? (tags.find((t) => t._id === tag)?.name ?? "Tag")
+    : "All tags";
+
   return (
     <div className="flex flex-wrap gap-3">
       <Select
@@ -40,7 +58,7 @@ export function PostsFilters({
         onValueChange={(v) => onCategoryChange(v === "all" || !v ? "" : v)}
       >
         <SelectTrigger className="h-11 w-[180px] rounded-xl">
-          <SelectValue placeholder="Category" />
+          <SelectValue placeholder="Category">{categoryLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All categories</SelectItem>
@@ -57,7 +75,7 @@ export function PostsFilters({
         onValueChange={(v) => onTagChange(v === "all" || !v ? "" : v)}
       >
         <SelectTrigger className="h-11 w-[180px] rounded-xl">
-          <SelectValue placeholder="Tag" />
+          <SelectValue placeholder="Tag">{tagLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All tags</SelectItem>
@@ -70,16 +88,22 @@ export function PostsFilters({
       </Select>
 
       <Select
-        value={sort || "default"}
-        onValueChange={(v) => onSortChange(v === "default" || !v ? "" : v)}
+        value={sortValue}
+        onValueChange={(v) => {
+          const next = (v as PostSortValue) || DEFAULT_POST_SORT;
+          if (next === DEFAULT_POST_SORT) onSortChange(null);
+          else onSortChange(next);
+        }}
       >
         <SelectTrigger className="h-11 w-[200px] rounded-xl">
-          <SelectValue placeholder="Sort by views" />
+          <SelectValue placeholder="Sort by views">{sortLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="default">Default order</SelectItem>
-          <SelectItem value="-views"> Most viewed</SelectItem>
-          <SelectItem value="views">Least viewed</SelectItem>
+          {POST_SORT_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
